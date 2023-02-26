@@ -9,6 +9,9 @@ use App\Http\Controllers\Auth\PasswordController;
 use App\Http\Controllers\Auth\PasswordResetLinkController;
 use App\Http\Controllers\Auth\RegisteredUserController;
 use App\Http\Controllers\Auth\VerifyEmailController;
+use App\Http\Controllers\CategoryController;
+use App\Http\Controllers\PostController;
+use App\Http\Controllers\UserController;
 use Illuminate\Support\Facades\Route;
 
 Route::prefix('api')->group(function () {
@@ -35,6 +38,8 @@ Route::prefix('api')->group(function () {
 
         Route::post('reset-password', [NewPasswordController::class, 'store'])
             ->name('password.store');
+
+        // Guest can only access index and show methods
     });
 
     Route::middleware('auth')->group(function () {
@@ -58,5 +63,8 @@ Route::prefix('api')->group(function () {
 
         Route::post('logout', [AuthenticatedSessionController::class, 'destroy'])
             ->name('logout');
+
+        Route::resource('users', UserController::class, ['middleware' => ['admin']]);
+        Route::resource('categories', CategoryController::class, ['middleware' => ['admin']]);
     });
 });

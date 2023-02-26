@@ -20,7 +20,7 @@ return new class extends Migration
             $table->float('price');
             $table->string('state');
             $table->string('image_url');
-            $table->integer('contact');
+            $table->string('contact');
             $table->string('location');
             $table->foreignId('category_id')->constrained('categories');
             $table->timestamps();

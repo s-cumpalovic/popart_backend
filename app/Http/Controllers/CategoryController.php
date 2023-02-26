@@ -5,81 +5,75 @@ namespace App\Http\Controllers;
 use App\Models\Category;
 use Illuminate\Http\Request;
 
+
 class CategoryController extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     *
-     * @return \Illuminate\Http\Response
-     */
+
+    public function __construct()
+    {
+        $this->middleware('admin');
+    }
+
+    public function deleteCategoryTree()
+    {
+        $this->children()->each(function ($child) {
+            $child->deleteCategoryTree();
+        });
+
+        $this->delete();
+    }
+
+
     public function index()
     {
-        //
+        $categories = Category::with('children')->get();
+        return response()->json($categories, 200);
     }
 
-    /**
-     * Show the form for creating a new resource.
-     *
-     * @return \Illuminate\Http\Response
-     */
-    public function create()
-    {
-        //
-    }
-
-    /**
-     * Store a newly created resource in storage.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @return \Illuminate\Http\Response
-     */
     public function store(Request $request)
     {
-        //
+        $validatedData = $request->validate([
+            'name' => 'required',
+            'parent_id' => 'nullable|exists:categories,id',
+        ]);
+
+        $category = new Category();
+        $category->name = $validatedData['name'];
+        $category->parent_id = $validatedData['parent_id'];
+        $category->save();
+
+        return response()->json(['message' => 'Category created successfully'], 201);
     }
 
-    /**
-     * Display the specified resource.
-     *
-     * @param  \App\Models\Category  $category
-     * @return \Illuminate\Http\Response
-     */
     public function show(Category $category)
     {
-        //
+        $oneCategory = Category::with('children')->find($category);
+        return response()->json($oneCategory, 200);
     }
 
-    /**
-     * Show the form for editing the specified resource.
-     *
-     * @param  \App\Models\Category  $category
-     * @return \Illuminate\Http\Response
-     */
-    public function edit(Category $category)
-    {
-        //
-    }
-
-    /**
-     * Update the specified resource in storage.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @param  \App\Models\Category  $category
-     * @return \Illuminate\Http\Response
-     */
     public function update(Request $request, Category $category)
     {
-        //
+        $validatedData = $request->validate([
+            'name' => 'required',
+            'parent_id' => 'nullable|exists:categories,id',
+        ]);
+
+        $category->name = $validatedData['name'];
+        $category->parent_id = $validatedData['parent_id'];
+        $category->save();
+
+        return response()->json(['message' => 'Category updated successfully'], 200);
     }
 
-    /**
-     * Remove the specified resource from storage.
-     *
-     * @param  \App\Models\Category  $category
-     * @return \Illuminate\Http\Response
-     */
     public function destroy(Category $category)
     {
-        //
+        $category->posts()->delete();
+        foreach ($category->children as $child) {
+            $this->destroy($child);
+        }
+
+        $category->delete();
+
+        return response()->json(['message' => 'Category deleted successfully'], 200);
     }
 }

@@ -25,4 +25,13 @@ class Category extends Model
     {
         return $this->hasMany(Post::class);
     }
+
+    public function deleteChildren()
+    {
+        foreach ($this->children as $child) {
+            $child->deleteChildren();
+        }
+
+        $this->delete();
+    }
 }

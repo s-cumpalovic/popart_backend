@@ -1,8 +1,8 @@
 <?php
 
-use App\Http\Controllers\AuthController;
+use App\Http\Controllers\CategoryController;
 use App\Http\Controllers\PostController;
-use Illuminate\Http\Request;
+use App\Http\Controllers\UserController;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -17,3 +17,5 @@ use Illuminate\Support\Facades\Route;
 */
 
 Route::resource('posts', PostController::class);
+Route::resource('users', UserController::class);
+Route::resource('categories', CategoryController::class);
