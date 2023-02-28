@@ -10,7 +10,7 @@ class PostController extends Controller
 {
     public function __construct()
     {
-        $this->middleware('auth')->except(['index', 'show']);
+        // $this->middleware('auth')->except(['index', 'show']);
     }
 
     private function getChildCategoryIds($categoryId)
@@ -43,8 +43,16 @@ class PostController extends Controller
             $posts->where('description', 'LIKE', '%' . $request->input('description') . '%');
         }
 
-        if ($request->has('price')) {
-            $posts->where('price', $request->input('price'));
+        if ($request->has('price_from') && $request->has('price_to')) {
+            $priceFrom = $request->input('price_from');
+            $priceTo = $request->input('price_to');
+            $posts->whereBetween('price', [$priceFrom, $priceTo]);
+        } elseif ($request->has('price_from')) {
+            $priceFrom = $request->input('price_from');
+            $posts->where('price', '>=', $priceFrom);
+        } elseif ($request->has('price_to')) {
+            $priceTo = $request->input('price_to');
+            $posts->where('price', '<=', $priceTo);
         }
 
         if ($request->has('state')) {
@@ -63,8 +71,8 @@ class PostController extends Controller
         $perPage = $request->has('per_page') ? $request->input('per_page') : 15;
         $currentPage = $request->has('current_page') ? $request->input('current_page') : 1;
 
-        $results = $posts->paginate($perPage, ['*'], 'page', $currentPage);
-        return $results;
+        $result = $posts->with('category')->orderBy('created_at', 'desc')->paginate($perPage, ['*'], 'page', $currentPage);
+        return $result;
     }
 
     public function store(Request $request)
@@ -78,6 +86,7 @@ class PostController extends Controller
             'contact' => 'required|string',
             'location' => 'required|string',
             'category_id' => 'required|exists:categories,id',
+            'user_id' => 'required'
         ]);
 
         $post = Post::create($validatedData);
@@ -85,9 +94,9 @@ class PostController extends Controller
         return response()->json(['message' => 'Post created successfully', 'data' => $post], 201);
     }
 
-    public function show(Post $post)
+    public function show($id)
     {
-        return Post::find($post);
+        return Post::with('category')->find($id);
     }
 
     public function update(Request $request, Post $post)

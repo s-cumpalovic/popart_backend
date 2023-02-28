@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Auth\LoginRequest;
+use App\Models\User;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -42,12 +43,13 @@ class AuthenticatedSessionController extends Controller
         $credentials = $request->only('email', 'password');
 
         if (Auth::attempt($credentials)) {
-            $user = Auth::user();
-
+            $user = User::find(Auth::user()->id);
+            $token = $user->createToken('token')->plainTextToken;
             $request->session()->regenerate();
 
             return response()->json([
                 'user' => $user,
+                'token' => $token,
             ], 200);
         }
 
@@ -62,7 +64,6 @@ class AuthenticatedSessionController extends Controller
         Auth::guard('web')->logout();
 
         $request->session()->invalidate();
-
         $request->session()->regenerateToken();
 
         return redirect('/');

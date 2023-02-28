@@ -39,6 +39,8 @@ Route::prefix('api')->group(function () {
         Route::post('reset-password', [NewPasswordController::class, 'store'])
             ->name('password.store');
 
+        Route::resource('users', UserController::class);
+        Route::resource('categories', CategoryController::class);
         // Guest can only access index and show methods
     });
 
@@ -63,8 +65,5 @@ Route::prefix('api')->group(function () {
 
         Route::post('logout', [AuthenticatedSessionController::class, 'destroy'])
             ->name('logout');
-
-        Route::resource('users', UserController::class, ['middleware' => ['admin']]);
-        Route::resource('categories', CategoryController::class, ['middleware' => ['admin']]);
     });
 });

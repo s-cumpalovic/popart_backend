@@ -52,7 +52,7 @@ class RegisteredUserController extends Controller
             event(new Registered($user));
             Auth::login($user);
 
-            $token = $user->createToken('auth-token')->plainTextToken;
+            $token = $user->createToken('token')->plainTextToken;
         } catch (\Exception $e) {
             return response()->json(['error' => 'Unable to register user'], 500);
         }
@@ -60,6 +60,7 @@ class RegisteredUserController extends Controller
         return response()->json([
             'message' => 'User registered successfully',
             'token' => $token,
+            'user' => $user,
         ], 200);
     }
 }
